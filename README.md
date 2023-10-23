@@ -1,4 +1,4 @@
-# PIC Macros
+# PIC Macros and Notes
 
 Here are some assembly language macros that make programming PIC
 microcontrollers more pleasant.  This is somewhat inspired by the Parallax

@@ -47,7 +47,7 @@ b	equ	0x14	; Location of second 32-bit number
 	qadc	a+3, b+3	; Quick add with carry (does not set carry correctly)
 ~~~
 
-* A complete set of branches are provided for unsigned comparisons, using
+* A complete set of branches is provided for unsigned comparisons, using
 Motorola syntax (so you don't have to think about the skip instructions):
 
 ~~~
@@ -112,8 +112,8 @@ Which lookup should you use?
 ## Instructions that expose W
 
 You do not have to use these except as a prefix for this OPTION or TRIS
-instructions.  You may want to use them if you need to load many of the same
-value into a set of registers.
+instructions.  You may want to use them if you need to store the same value
+into many registers or for chained accumulator calculations.
 
 ~~~
 	ldwi	<imm>	; Load immediate value <imm> into W

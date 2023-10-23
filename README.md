@@ -1,7 +1,8 @@
-# pic-macros
+# PIC Macros
 
-Assembly language macros that make programming PIC microcontrollers more
-pleasant.  This is somewhat inspired by the Parallax PIC assembler.
+Here are some assembly language macros that make programming PIC
+microcontrollers more pleasant.  This is somewhat inspired by the Parallax
+PIC assembler.
 
 The general idea of these macros is to hide the W register and make PIC look
 like a two-address machine with mnemonics similar to 6800 / 6502 / PDP-11.

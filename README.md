@@ -185,6 +185,14 @@ value into a set of registers.
 ## Dual Operand Bit Instructions
 
 ~~~
+	ldb	<dest>, <dest-b>, <src>, <src-b> 	; Load bit number <dest-b> of register <dest> from bit number <src-b> of register <src>
+
+	ldnb	<dest>, <dest-b>, <src>, <src-b>	; Same as above, but load the complement of the bit
+~~~
+
+Incremement or decrement register depending on bit value:
+
+~~~
 	addb	<dest>, <src>, <b>	; Add bit number <b> of register <src> to register <dest>
 					; This one affects Carry and Zero.
 
@@ -196,14 +204,6 @@ value into a set of registers.
 
 	decb	<dest>, <src>, <b>	; Decrement register <dest> if bit number <b> or register <src> is clear
 					; this one does not affect Carry.  Zero is affected only if the bit was clear.
-
-	bic	<dest>, <b>		; Clear bit number <b> of register <dest>
-
-	bis	<dest>, <b>		; Set bit number <b> of register <dest>
-
-	ldb	<dest>, <dest-b>, <src>, <src-b> 	; Load bit number <dest-b> of register <dest> from bit number <src-b> of register <src>
-
-	ldnb	<dest>, <dest-b>, <src>, <src-b>	; Same as above, but load the complement of the bit
 ~~~
 
 ## Single Operand Instructions
@@ -240,6 +240,14 @@ value into a set of registers.
 	subb	<dest>			; Subtract borrow (negative of carry flag) from register <dest>
 
 	qsubb	<dest>			; Quick verison of above: does not set Carry correctly
+~~~
+
+## Single Operand Bit Instructions
+
+~~~
+	bic	<dest>, <b>		; Clear bit number <b> of register <dest>
+
+	bis	<dest>, <b>		; Set bit number <b> of register <dest>
 ~~~
 
 ## Implied Operand Instructions

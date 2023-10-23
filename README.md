@@ -425,7 +425,9 @@ This sequence saves and restores the full CPU context for proper interrupt
 handling.
 
 ~~~
-; These must register that are always visible, even when not in bank 0
+; These must be registers that are always visible, no matter what the RP
+; bits are set to!
+
 saved_fsr	equ	0x7c
 saved_pclath	equ	0x7d
 saved_status	equ	0x7e

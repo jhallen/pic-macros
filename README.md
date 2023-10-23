@@ -30,8 +30,7 @@ one immediate value:
 * The macros hide register banking.  On entry, each macro assumes that the
 current bank is bank 0 (the RP bits in STATUS are all set to zero).  If the
 macro needs to switch banks to access a register which is located beyond
-bank 0, it automatically does so.  It then restores the current bank back to
-0.
+bank 0, it automatically does so.  It then restores the current bank back to 0.
 
 * Macros are provided for multi-precision arithmetic, including ADC and
 SBC (add with carry and subtract with carry).  For example, to add two

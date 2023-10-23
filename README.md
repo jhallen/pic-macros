@@ -321,7 +321,7 @@ Incremement or decrement register depending on bit value:
 ## Table macros
 
 ~~~
-		; Index <table> with regsiter <src>, but result into <dest>
+		; Index <table> with regsiter <src>, put result into <dest>
 		short_lookup	<table>, <dest>, <src>	; Use if table is in same 256 word page
 		lookup		<table>, <dest>, <src>	; Use if table is in same 2K word page
 		far_lookup	<table>, <dest>, <src>	; Use if table is in a different page
@@ -332,3 +332,88 @@ Incremement or decrement register depending on bit value:
 		val	3
 		. . .
 ~~~
+
+## PIC Notes
+
+Note that multi-byte increment can be done quickly like this (does not affect any flags)
+
+~~~
+		incfsz	dest, 1		; Inc dest, skip if result is zero (skip if we carried)
+		goto	done
+		incfsz	dest+1, 1	; Inc dest+1, skip if result 0
+		goto	done
+		incfsz	dest+2, 1
+		goto	done
+		incfsz	dest+3, 1
+		goto	overflow
+	done
+	overflow
+~~~
+
+There are up to 512 registers [? depends on PIC].
+
+The IND/FSR indirect addressing mechanism can reach all 512 of them, but
+with two banks: the IRP bit of the status register supplies the upper
+bit of the address.
+
+Direct addressing is only 7 bits [? depends on PIC], so there are
+multiple direct address banks.  The RP bits of the status register
+selects the bank.  These registers are aliased into all of the
+banks:
+
+     indf
+     pcl
+     status
+     fsr
+     pclath
+     intcon
+     general purpose registers 0x70 - 0x7F
+
+For other registers, you use the "banksel" pseudo-instruction:
+
+    banksel ANSELA
+    clrf ANSELA
+    banksel PORTA
+
+Borrow is inverted (0 - 1 give a clear carry).
+
+There are two code page sizes to worry about: 256 bytes for adding to PC
+for table lookup.  2K bytes for jmp (goto).  Can use farjmp for jumps out
+of current page.  PCLATH supplies the upper bits so that the entire
+memory map can be reached with goto.
+
+MPASM has "pagesel" to help deal with this.  I provide farjmp and farjsr.
+
+Code assumes PCLATH is correct, so if you set it for a farjsr and then
+return, it needs to be restored to its original value.  The farjsr macro
+does this for you.  Rts (return) does not- it just restores the PC, not
+PCLATH.
+
+[PIC16F720 has only a single 2K page, so no need to worry about farjsr..]
+
+With MPASM, correct sequence is:
+
+    	pagesel dest
+    	call dest
+    	pagesel here
+    here
+
+Pagesel is stupid: it always sets the page bits (as long as code is
+larger than 2K).  It does not know to not set them if the target is in
+the same page.
+
+Interrupt handlers must save context in registers 0x70 - 0x7F..  problem
+is there is no way to know which is the current register bank, so only
+these registers (which are aliased in each bank) can be used for this.
+
+If you do a bit operation on a PORT, the other bits could be affected
+since it's a RMW operation (for example if input give different value
+than output, you will end up changing the output).
+
+I/O bits may seem to not work because:
+
+Don't forget to write to ANSEL bits.. pins selected for analog input
+(which is the default) always read 0.
+
+On 10F200, you must clear the T0CS bit of OPTION since it prevents GP2
+from being used as an output.

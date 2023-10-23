@@ -336,7 +336,9 @@ Incremement or decrement register depending on bit value:
 
 ## PIC Notes
 
-Note that multi-byte increment can be done quickly like this (does not affect any flags)
+### Multi-byte increment
+
+Multi-byte increment can be done quickly like this (does not affect any flags)
 
 ~~~
 		incfsz	dest, 1		; Inc dest, skip if result is zero (skip if we carried)
@@ -350,6 +352,8 @@ Note that multi-byte increment can be done quickly like this (does not affect an
 	done
 	overflow
 ~~~
+
+### Register banks
 
 There are up to 512 registers [? depends on PIC].
 
@@ -376,7 +380,11 @@ For other registers, you use the "banksel" pseudo-instruction:
     clrf ANSELA
     banksel PORTA
 
+### Borrow
+
 Borrow is inverted (0 - 1 give a clear carry).
+
+### Code banks
 
 There are two code page sizes to worry about: 256 bytes for adding to PC
 for table lookup.  2K bytes for jmp (goto).  Can use farjmp for jumps out
@@ -403,15 +411,13 @@ Pagesel is stupid: it always sets the page bits (as long as code is
 larger than 2K).  It does not know to not set them if the target is in
 the same page.
 
-Interrupt handlers must save context in registers 0x70 - 0x7F..  problem
-is there is no way to know which is the current register bank, so only
-these registers (which are aliased in each bank) can be used for this.
+### Read / Modify / Write Hazard
 
 If you do a bit operation on a PORT, the other bits could be affected
 since it's a RMW operation (for example if input give different value
 than output, you will end up changing the output).
 
-I/O bits may seem to not work because:
+### Why don't some GPIO bits work?
 
 Don't forget to write to ANSEL bits.. pins selected for analog input
 (which is the default) always read 0.
@@ -419,7 +425,11 @@ Don't forget to write to ANSEL bits.. pins selected for analog input
 On 10F200, you must clear the T0CS bit of OPTION since it prevents GP2
 from being used as an output.
 
-## Correct PIC Interrupt Sequence
+### Correct PIC Interrupt Sequence
+
+Interrupt handlers must save context in registers 0x70 - 0x7F..  problem
+is there is no way to know which is the current register bank, so only
+these registers (which are aliased in each bank) can be used for this.
 
 This sequence saves and restores the full CPU context for proper interrupt
 handling.

@@ -13,6 +13,9 @@ like a two-address machine with mnemonics similar to 6800 / 6502 / PDP-11.
 The syntax used is compatible with Microchip's [MPASM](https://ww1.microchip.com/downloads/en/DeviceDoc/30400g.pdf)
 and the open source [GPASM](https://gputils.sourceforge.io/).
 
+Note that this is the old syntax, which is very different from that used in
+the newer XC8 PIC Assembler.
+
 Simply include "macros.inc" into your assembly source file with:
 
 ~~~

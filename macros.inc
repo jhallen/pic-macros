@@ -333,10 +333,10 @@ rtn	equ	0x1b
 ;r14	equ	0x7e
 ;r15	equ	0x7f
 
-saved_fsr	equ	0x1c
-saved_pclath	equ	0x1d
-saved_status	equ	0x1e
-saved_w		equ	0x1f
+saved_fsr	equ	0x7c
+saved_pclath	equ	0x7d
+saved_status	equ	0x7e
+saved_w		equ	0x7f
 
 ;; Macros that don't hide W
 

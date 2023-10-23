@@ -418,3 +418,51 @@ Don't forget to write to ANSEL bits.. pins selected for analog input
 
 On 10F200, you must clear the T0CS bit of OPTION since it prevents GP2
 from being used as an output.
+
+## Correct PIC Interrupt Sequence
+
+This sequence saves and restores the full CPU context for proper interrupt
+handling.
+
+~~~
+; These must register that are always visible, even when not in bank 0
+saved_fsr	equ	0x7c
+saved_pclath	equ	0x7d
+saved_status	equ	0x7e
+saved_w		equ	0x7f
+
+
+; Reset vector
+rstvec	org	0x0
+	jmp	run
+
+; Interrupt vector
+	org	0x4
+; Interrupt!
+
+; Save full context
+	movwf	saved_w	; Saved_w must be visible in all banks (0x70 - 0x7F)
+	swapf	STATUS, W
+	banksel	0		; The rest can be anywhere
+	movwf	saved_status	; Note status has nibbles swapped in saved_status
+	movf	PCLATH, W
+	movwf	saved_pclath
+	movf	FSR, W
+	movwf	saved_fsr
+
+; You ISR goes here
+
+	. . . .
+
+; Restore full context
+	movf	saved_fsr, W
+	movwf	FSR
+	movf	saved_pclath, W
+	movwf	pclath
+	swapf	saved_status, W ; Swap status nibbles back to correct order
+	movwf	status
+	swapf	saved_w, F ; Swap nibbles in saved_w
+	swapf	saved_w, W ; Swap back to normal when transferring to W
+; Return from interrupt...
+	retfie
+~~~

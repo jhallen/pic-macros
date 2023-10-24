@@ -26,7 +26,7 @@ Simply include "macros.inc" into your assembly source file with:
 ## Features
 
 * The macros make the PIC look like a two address machine.  This means that
-dual-operand instruction expect two register arguments, or one register and
+dual-operand instructions expect two register arguments, or one register and
 one immediate value:
 
 ~~~
@@ -34,10 +34,11 @@ one immediate value:
 	addi	0x14, 3		; Add immediate value 3 to register 0x14
 ~~~
 
-* The macros hide register banking.  On entry, each macro assumes that the
-current bank is bank 0 (the RP bits in STATUS are all set to zero).  If the
-macro needs to switch banks to access a register which is located beyond
-bank 0, it automatically does so.  It then restores the current bank back to 0.
+* The macros hide direct address register banking.  On entry, each macro
+assumes that the current bank is bank 0 (the RP bits in STATUS are all set
+to zero).  If the macro needs to switch banks to access a register which is
+located beyond bank 0, it automatically does so.  It then restores the
+current bank back to 0.
 
 * Macros are provided for multi-precision arithmetic, including ADC and
 SBC (add with carry and subtract with carry).  For example, to add two
@@ -126,7 +127,7 @@ into many registers or for chained accumulator calculations.
 
 	addwi	<imm>	; Add immediate value <imm> into W
 
-	subwi	<imm>	; Subtract immediate value <imm> from W
+	rsbwi	<imm>	; Reverse subtract immediate: immediate - W -> W
 
 	orwi	<imm>	; Bit-wise OR immediate value <imm> into W
 

@@ -376,8 +376,8 @@ addwi	macro	imm
 		addlw	imm
 	endm
 
-; Subtract immediate from W
-subwi	macro
+; Reverse subtract: immediate - W -> W
+rsbwi	macro
 		sublw	imm
 	endm
 

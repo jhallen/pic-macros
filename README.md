@@ -140,6 +140,10 @@ into many registers or for chained accumulator calculations.
 	stw	<dest>	; Store W into register <dest>
 
 	clrw		; Clear W
+
+	negw		; 2's complement negate W (rsbwi 0)
+
+	comw		; Bit-wise complement W (xorwi 0xFF)
 ~~~
 
 ## Dual Operand Instructions
@@ -285,13 +289,17 @@ Incremement or decrement register depending on bit value:
 
 	jcc	label			; Jump if Carry clear
 
-	jlo	label			; Jump if lower
+	jlo	label			; Jump if lower (same as jcc)
 
-	jls	label			; Jump if lower or same
+	jls	label			; Jump if lower or same (jump if C=0 || Z=1)
 
-	jhi	label			; Jump if higher
+	jhi	label			; Jump if higher (jump if C=1 && Z=0)
 
-	jhs	label			; Jump if higher or same
+	jhs	label			; Jump if higher or same (same as jcs)
+
+	jac	label			; Jump if digit (aux) carry is clear
+
+	jas	label			; Jump if digit (aux) carry is set
 
 	decjne	<dest>, label		; Decrement register <dest>, jump if it's not zero
 

@@ -381,6 +381,10 @@ rsbwi	macro
 		sublw	imm
 	endm
 
+negw	macro
+		sublw	0
+	endm
+
 ; Bitwise AND immediate into W
 andwi	macro	imm
 		andlw	imm
@@ -394,6 +398,10 @@ orwi	macro	imm
 ; Bitwise XOR immediate into W
 xorwi	macro	imm
 		xorlw	imm
+	endm
+
+comw	macro
+		xorlw	0xFF
 	endm
 
 ;; Bit operations

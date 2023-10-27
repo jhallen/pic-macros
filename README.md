@@ -8,7 +8,9 @@ This is somewhat inspired by the Parallax PIC assembler "PASM" that was
 available in the early 1990s.
 
 The general idea of these macros is to hide the W register and make PIC look
-like a two-address machine with mnemonics similar to 6800 / 6502 / PDP-11.
+like a two-address machine with mnemonics similar to 6800 / 6502 / PDP-11. 
+They also provide essential, but missing features of PIC, such as macros for
+multi-precision arithmetic.
 
 The syntax used is compatible with Microchip's [MPASM](https://ww1.microchip.com/downloads/en/DeviceDoc/30400g.pdf)
 and the open source [GPASM](https://gputils.sourceforge.io/).
@@ -402,15 +404,17 @@ Borrow is inverted (0 - 1 give a clear carry).
 
 ### Code pages
 
-There are two code page sizes to worry about: 256 bytes for adding to PC for
-table lookup and 2K bytes for jmp (GOTO).  PCLATH supplies the upper bits so
-that the entire memory map can be reached with goto.
+There are multiple code page sizes to worry about: 256 bytes for adding to
+PC for table lookup and 2K bytes for jmp (GOTO) and jsr (CALL) [The page
+size depends on the PIC, GOTO and CALL may have different page sizes]. 
+PCLATH supplies the upper bits so that the entire memory map can be reached
+with GOTO and CALL.
 
 MPASM has "pagesel" pseudo-op to help deal with this.  I provide farjmp and
 farjsr, which use pagesel.
 
-We adhere to the convention that PCLATH holds the current 2KB page by
-default.  This way, we can CALL subroutines in the current page without
+We adhere to the convention that PCLATH holds the current CALL / GOTO page
+by default.  This way, we can CALL subroutines in the current page without
 having to modify PCLATH.
 
 Thus when calling a subroutine in a different page, use the farjsr macro. 
@@ -418,7 +422,8 @@ It sets up PCLATH for the target bank, calls the subroutine, then restores
 PCLATH back to the current bank.  Note that the RETURN and RETLW instructions
 do not modify PCLATH.
 
-[PIC16F720 has only a single 2K page, so no need to worry about farjsr..]
+[PIC16F720 has only a single 2K page, which equals the reach of CALL and
+GOTO, so no need to worry about farjsr..]
 
 [PIC10F200 does not have RETURN, only RETLW]
 

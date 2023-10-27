@@ -406,9 +406,8 @@ Borrow is inverted (0 - 1 give a clear carry).
 
 There are multiple code page sizes to worry about: 256 bytes for adding to
 PC for table lookup and 2K bytes for jmp (GOTO) and jsr (CALL) [The page
-size depends on the PIC, GOTO and CALL may have different page sizes]. 
-PCLATH supplies the upper bits so that the entire memory map can be reached
-with GOTO and CALL.
+size depends on the PIC].  PCLATH supplies the upper bits so that the entire
+memory map can be reached with GOTO and CALL.
 
 MPASM has "pagesel" pseudo-op to help deal with this.  I provide farjmp and
 farjsr, which use pagesel.
@@ -426,6 +425,13 @@ do not modify PCLATH.
 GOTO, so no need to worry about farjsr..]
 
 [PIC10F200 does not have RETURN, only RETLW]
+
+[Some PICs (for example PIC10F200 and PIC16F59) do not have PCLATH, instead
+the page number is provided by bits in the STATUS register.  On these, the
+CALL address is shorter than the GOTO address.  The missing bits are set to
+0.  Likewise, when jumping by modifying PCL, the missing bits are set to 0. 
+It means CALL and jumps via PCL modification can not reach all of code
+memory].
 
 With MPASM, correct sequence is:
 

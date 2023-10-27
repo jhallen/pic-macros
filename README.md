@@ -69,9 +69,9 @@ Motorola syntax (so you don't have to think about the skip instructions):
 	jls	target	; Jump to target if a is lower than or same as b
 ~~~
 
-* Macros are provided for proper code bank switching:
+* Macros are provided for proper code page switching:
 
-Use jsr when calling a subroutine that is located within the same bank:
+Use jsr when calling a subroutine that is located within the same page:
 
 ~~~
 	jsr	fred		; Jump to subroutine fred
@@ -80,7 +80,7 @@ fred	. . .			; Do something
 	rts			; Return
 ~~~
 
-Use farjsr when calling a subroutine that is located in a different bank:
+Use farjsr when calling a subroutine that is located in a different page:
 
 ~~~
 	farjsr	bob		; Jump to subroutine bob

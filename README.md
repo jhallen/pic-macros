@@ -372,14 +372,14 @@ Multi-byte increment can be done quickly like this (does not affect any flags)
 
 There are up to 512 registers [? depends on PIC].
 
-The IND/FSR indirect addressing mechanism can reach all 512 of them, but
-with two banks: the IRP bit of the status register supplies the upper
-bit of the address.
+One way to access them is through the IND / FSR indirect addressing
+mechanism.  In this case, FSR supplies the lower 8 bits of the address and
+the IRP bit of the status register supplies the top bit.
 
-Direct addressing is only 7 bits [? depends on PIC], so there are
-multiple direct address banks.  The RP bits of the status register
-selects the bank.  These registers are aliased into all of the
-banks:
+Direct addressing is only 7 bits [?  depends on PIC], so there are multiple
+direct address banks.  The RP bits of the status register selects the bank. 
+
+The following registers are aliased into all of the banks:
 
      indf
      pcl
@@ -389,7 +389,8 @@ banks:
      intcon
      general purpose registers 0x70 - 0x7F
 
-For other registers, you use the "banksel" pseudo-instruction:
+For direct address access to the other registers, you use the "banksel"
+pseudo-instruction:
 
     banksel ANSELA
     clrf ANSELA
@@ -399,21 +400,27 @@ For other registers, you use the "banksel" pseudo-instruction:
 
 Borrow is inverted (0 - 1 give a clear carry).
 
-### Code banks
+### Code pages
 
-There are two code page sizes to worry about: 256 bytes for adding to PC
-for table lookup.  2K bytes for jmp (goto).  Can use farjmp for jumps out
-of current page.  PCLATH supplies the upper bits so that the entire
-memory map can be reached with goto.
+There are two code page sizes to worry about: 256 bytes for adding to PC for
+table lookup and 2K bytes for jmp (GOTO).  PCLATH supplies the upper bits so
+that the entire memory map can be reached with goto.
 
-MPASM has "pagesel" to help deal with this.  I provide farjmp and farjsr.
+MPASM has "pagesel" pseudo-op to help deal with this.  I provide farjmp and
+farjsr, which use pagesel.
 
-Code assumes PCLATH is correct, so if you set it for a farjsr and then
-return, it needs to be restored to its original value.  The farjsr macro
-does this for you.  Rts (return) does not- it just restores the PC, not
-PCLATH.
+We adhere to the convention that PCLATH holds the current 2KB page by
+default.  This way, we can CALL subroutines in the current page without
+having to modify PCLATH.
+
+Thus when calling a subroutine in a different page, use the farjsr macro. 
+It sets up PCLATH for the target bank, calls the subroutine, then restores
+PCLATH back to the current bank.  Note that the RETURN and RETLW instructions
+do not modify PCLATH.
 
 [PIC16F720 has only a single 2K page, so no need to worry about farjsr..]
+
+[PIC10F200 does not have RETURN, only RETLW]
 
 With MPASM, correct sequence is:
 
@@ -421,10 +428,6 @@ With MPASM, correct sequence is:
     	call dest
     	pagesel here
     here
-
-Pagesel is stupid: it always sets the page bits (as long as code is
-larger than 2K).  It does not know to not set them if the target is in
-the same page.
 
 ### Read / Modify / Write Hazard
 
@@ -442,22 +445,22 @@ from being used as an output.
 
 ### Correct PIC Interrupt Sequence
 
-Interrupt handlers must save context in registers 0x70 - 0x7F..  problem
-is there is no way to know which is the current register bank, so only
-these registers (which are aliased in each bank) can be used for this.
+The interrupt handler must save the context without changing it.  This means
+that we need at least one register which is reachable no matter what the
+current bank is set to.  Luckily registers 0x70 - 0x7F are aliased into
+every bank [this is PIC dependent].
 
 This sequence saves and restores the full CPU context for proper interrupt
 handling.
 
 ~~~
-; These must be registers that are always visible, no matter what the RP
-; bits are set to!
-
+; Code assumes these  are in bank 0, but could be changed
 saved_fsr	equ	0x7c
 saved_pclath	equ	0x7d
 saved_status	equ	0x7e
-saved_w		equ	0x7f
 
+; This one must be always visible, no matter what the RP bits are set to!
+saved_w		equ	0x7f
 
 ; Reset vector
 rstvec	org	0x0
@@ -467,11 +470,11 @@ rstvec	org	0x0
 	org	0x4
 ; Interrupt!
 
-; Save full context
+; Save full context: STATUS, W, PCLATH and FSR
 	movwf	saved_w	; Saved_w must be visible in all banks (0x70 - 0x7F)
-	swapf	STATUS, W
-	banksel	0		; The rest can be anywhere
-	movwf	saved_status	; Note status has nibbles swapped in saved_status
+	swapf	STATUS, W ; Pre-swap status, this is undone in restore
+	banksel	0		; The rest can be anywhere, we choose bank 0
+	movwf	saved_status
 	movf	PCLATH, W
 	movwf	saved_pclath
 	movf	FSR, W
@@ -482,14 +485,15 @@ rstvec	org	0x0
 	. . . .
 
 ; Restore full context
+; Assumes we are still in bank 0
 	movf	saved_fsr, W
 	movwf	FSR
 	movf	saved_pclath, W
-	movwf	pclath
+	movwf	PCLATH
 	swapf	saved_status, W ; Swap status nibbles back to correct order
 	movwf	status
-	swapf	saved_w, F ; Swap nibbles in saved_w
-	swapf	saved_w, W ; Swap back to normal when transferring to W
+	swapf	saved_w, F ; Swap nibbles in saved_w (does not affect STATUS)
+	swapf	saved_w, W ; Swap back to normal when transferring to W (does not affect STATUS)
 ; Return from interrupt...
 	retfie
 ~~~
